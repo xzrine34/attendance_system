@@ -82,7 +82,7 @@ th{background:#eee;font-weight:600}
 <div id="qrAuthInterface">
   <h2>QR Code Authentication</h2>
   <p>Scan your personal QR code to access the attendance sheet.</p>
-  <video id="qrVideo" playsinline></video>
+ <div id="qrVideo" style="width:100%;max-width:400px;margin:auto;"></div>
   <p id="qrStatus"></p>
   <button onclick="startQRScanner()">Start Scanner</button>
   <button onclick="cancelQR()">Cancel</button>
