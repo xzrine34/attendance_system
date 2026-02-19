@@ -1,3 +1,5 @@
+Attendance
+
 <! DOCTYPE html>
 <html lang="en">
 <head>
@@ -51,12 +53,29 @@ header{background:var(--maroon);color:white;padding:14px;text-align:center;borde
 
 /* TABLE */
 .table-wrap{overflow-x:auto;background:white;border-radius:14px;margin-top:12px}
-table{border-collapse:collapse;width:max-content}
+table{
+  border-collapse:collapse;
+  width:100%;
+  min-width:1200px; /* forces horizontal scroll instead of squishing */
+}
+
 th,td{border:2px solid #999;padding:6px;text-align:center;font-size:11px;min-width:60px}
 th{background:#eee;font-weight:600}
 .day-head{background:var(--maroon);color:white;border-right:4px solid black}
-.sticky{position:sticky;left:0;background:white;z-index:3;font-weight:600}
-.name{left:45px}
+.sticky{
+  position:sticky;
+  left:0;
+  background:white;
+  z-index:4;
+  font-weight:600;
+}
+
+.name{
+  left:42px;
+  z-index:5;
+  background:white;
+}
+
 .summary-col{background:#f7f7f7;min-width:160px;font-weight:600}
 .P{background:#c8f7c5;font-weight:600}
 .T{background:#fff3b0;font-weight:600}
@@ -72,6 +91,45 @@ th{background:#eee;font-weight:600}
 @media screen and (max-width:480px){
   #qrVideo{width:100%;height:auto}
 }
+
+@media screen and (max-width:480px){
+
+  header{
+    font-size:14px;
+    padding:12px;
+  }
+
+  .sub{
+    font-size:11px;
+  }
+
+  #searchInput{
+    width:100%;
+    margin-top:8px;
+  }
+
+  .top-bar{
+    flex-direction:column;
+    align-items:stretch;
+    gap:6px;
+  }
+
+  th,td{
+    font-size:10px;
+    padding:4px;
+    min-width:55px;
+  }
+
+  .summary-col{
+    min-width:180px;
+    font-size:10px;
+  }
+}
+
+.sticky{
+  box-shadow:2px 0 4px rgba(0,0,0,0.1);
+}
+
 </style>
 </head>
 <body>
@@ -487,4 +545,3 @@ function updateClock(){ timeNow.textContent="Current Time: "+new Date().toLocale
 </script>
 </body>
 </html>
-
