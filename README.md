@@ -16,8 +16,22 @@
 body{margin:0;font-family:'Poppins',sans-serif;background:#f2f2f2}
 
 /* LOGIN */
-#login{min-height:100vh;display:flex;justify-content:center;align-items:center;background:linear-gradient(rgba(122,12,12,.85),rgba(122,12,12,.85)),url("https://images.unsplash.com/photo-1524995997946-a1c2e315a42f");background-size:cover;background-position:center;padding:15px}
-.login-box{background:#fff;width:100%;max-width:380px;padding:25px;border-radius:18px;box-shadow:0 15px 30px rgba(0,0,0,.35)}
+#login{min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(rgba(122,12,12,.85),rgba(122,12,12,.85)),url("https://images.unsplash.com/photo-1524995997946-a1c2e315a42f");
+background-size:cover;
+background-position:center;
+padding:15px
+}
+
+.login-box{background:#fff;
+width:100%;
+max-width:380px;
+padding:25px;
+border-radius:18px;
+box-shadow:0 15px 30px rgba(0,0,0,.35)}
 .login-box h2{text-align:center;color:var(--maroon)}
 input,select,button{width:100%;padding:12px;margin-top:10px;font-size:14px}
 button{background:var(--maroon);color:white;border:none;border-radius:10px;cursor:pointer}
@@ -106,6 +120,12 @@ th{background:#eee;font-weight:600}
     <button id="adminReset" onclick="manualReset()">RESET WEEK</button>
   </div>
   <input type="text" id="searchInput" placeholder="🔍 Search student...">
+</div>
+
+<!-- Week selector -->
+<div style="margin-top:10px;">
+  <label for="weekSelect">Select Week: </label>
+  <select id="weekSelect"></select>
 </div>
 
 <div class="table-wrap">
@@ -417,9 +437,54 @@ function checkWeeklyReset() {
 }
 checkWeeklyReset();
 
+const weekSelect = document.getElementById("weekSelect");
+
+function loadWeekOptions() {
+  // Clear existing options
+  weekSelect.innerHTML = "";
+
+  // Look for all keys in localStorage that start with "attendance_"
+  Object.keys(localStorage)
+    .filter(k => k.startsWith("attendance_") && !k.endsWith("_tardy"))
+    .sort()
+    .forEach(weekKey => {
+      const option = document.createElement("option");
+      option.value = weekKey;
+      option.textContent = weekKey.replace("attendance_", "Week of ");
+      weekSelect.appendChild(option);
+    });
+
+  // Default select current week
+  weekSelect.value = getWeekKey();
+  loadWeekData(weekSelect.value);
+}
+
+// Load selected week's data
+function loadWeekData(weekKey) {
+  let saved = localStorage.getItem(weekKey);
+  if(saved){
+    tbody.innerHTML = saved;
+    tardyMinutesData = JSON.parse(localStorage.getItem(`${weekKey}_tardy`)) || {};
+    updateAllSummaries();
+  } else {
+    // If no data exists yet for that week, reset table
+    loadTable();
+  }
+}
+
+// Event listener for changing week
+weekSelect.addEventListener("change", () => {
+  loadWeekData(weekSelect.value);
+});
+
+// Populate the dropdown on page load
+loadWeekOptions();
+
+
 /* CLOCK */
 function updateClock(){ timeNow.textContent="Current Time: "+new Date().toLocaleTimeString(); }
 
 </script>
 </body>
 </html>
+
