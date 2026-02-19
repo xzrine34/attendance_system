@@ -8,6 +8,8 @@
 
 <!-- QR Scanner library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+
 
 <style>
 :root{--maroon:#7a0c0c}
@@ -194,7 +196,9 @@ function startQRScanner(){
   const status = document.getElementById("qrStatus");
   status.textContent = "";
 
-  navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:"environment"}}})
+navigator.mediaDevices.getUserMedia({
+  video: { facingMode: "environment" }
+})
   .then(stream => { qrStream = stream; video.srcObject=stream; video.play(); requestAnimationFrame(scanQR); })
   .catch(err => {
     navigator.mediaDevices.getUserMedia({video:true})
@@ -202,31 +206,50 @@ function startQRScanner(){
     .catch(err=>status.textContent="Camera not accessible");
   });
 
-  function scanQR(){
-    if(video.readyState===video.HAVE_ENOUGH_DATA){
-      const canvas=document.createElement("canvas");
-      canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-      const ctx=canvas.getContext("2d");
-      ctx.drawImage(video,0,0,canvas.width,canvas.height);
-      const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
-      const code=jsQR(imageData.data,canvas.width,canvas.height);
-      if(code){
-        if(code.data===studentQRCodes[loggedStudent]){
-          stopQRScanner();
-          status.style.color="green";
-          status.textContent="QR Verified! Loading attendance...";
-          setTimeout(()=>{
-            qrAuthInterface.style.display="none";
-            main.style.display="block";
-            studentAction.style.display="block";
-            loadTable();
-            setInterval(updateClock,1000);
-          },500);
-        } else status.textContent="Invalid QR code";
+function scanQR(){
+
+  if(video.readyState === video.HAVE_ENOUGH_DATA){
+
+    if(!scanQR.canvas){
+      scanQR.canvas = document.createElement("canvas");
+      scanQR.ctx = scanQR.canvas.getContext("2d");
+    }
+
+    const canvas = scanQR.canvas;
+    const ctx = scanQR.ctx;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+    const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+    if(code){
+      if(code.data === studentQRCodes[loggedStudent]){
+        stopQRScanner();
+        status.style.color = "green";
+        status.textContent = "QR Verified! Loading attendance...";
+
+        setTimeout(()=>{
+          qrAuthInterface.style.display="none";
+          main.style.display="block";
+          studentAction.style.display="block";
+          loadTable();
+          setInterval(updateClock,1000);
+        },500);
+
+        return; // stops loop
+      } else {
+        status.textContent = "Invalid QR code";
       }
     }
-    requestAnimationFrame(scanQR);
   }
+
+  requestAnimationFrame(scanQR);
+}
+
 }
 
 function stopQRScanner(){ if(qrStream) qrStream.getTracks().forEach(t=>t.stop()); }
