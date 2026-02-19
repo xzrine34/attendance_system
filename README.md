@@ -300,16 +300,6 @@ function loadTable(){
   loadSavedData(); updateAllSummaries();
 }
 
-function saveData(){
-  localStorage.setItem("attendanceData",tbody.innerHTML);
-  localStorage.setItem("tardyData",JSON.stringify(tardyMinutesData));
-}
-
-function loadSavedData(){
-  let saved=localStorage.getItem("attendanceData");
-  if(saved){ tbody.innerHTML=saved; tardyMinutesData=JSON.parse(localStorage.getItem("tardyData"))||{}; }
-}
-
 /* SEARCH */
 document.addEventListener("input",function(e){
   if(e.target.id==="searchInput"){
@@ -377,14 +367,55 @@ function updateRowSummary(row){
 }
 function updateAllSummaries(){ [...tbody.rows].forEach(row=>updateRowSummary(row)); }
 
-/* WEEKLY RESET */
-function checkWeeklyReset(){
-  let lastReset=localStorage.getItem("lastReset"); let now=Date.now();
-  if(!lastReset) localStorage.setItem("lastReset",now);
-  else if(now-lastReset>7*24*60*60*1000){ localStorage.clear(); localStorage.setItem("lastReset",now); }
+/* ----------------- WEEKLY KEYS ----------------- */
+function getWeekKey() {
+  let now = new Date();
+  let day = now.getDay();
+  let diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday
+  let monday = new Date(now.setDate(diff));
+  let yyyy = monday.getFullYear();
+  let mm = String(monday.getMonth() + 1).padStart(2, "0");
+  let dd = String(monday.getDate()).padStart(2, "0");
+  return `attendance_${yyyy}-${mm}-${dd}`;
+}
+
+/* ----------------- SAVE & LOAD ----------------- */
+function saveData() {
+  const weekKey = getWeekKey();
+  localStorage.setItem(weekKey, tbody.innerHTML);
+  localStorage.setItem(`${weekKey}_tardy`, JSON.stringify(tardyMinutesData));
+}
+
+function loadSavedData() {
+  const weekKey = getWeekKey();
+  let saved = localStorage.getItem(weekKey);
+  if (saved) {
+    tbody.innerHTML = saved;
+    tardyMinutesData = JSON.parse(localStorage.getItem(`${weekKey}_tardy`)) || {};
+  }
+}
+
+/* ----------------- MANUAL WEEKLY RESET ----------------- */
+function manualReset() {
+  if (confirm("Reset attendance for this week?")) {
+    const weekKey = getWeekKey();
+    localStorage.removeItem(weekKey);
+    localStorage.removeItem(`${weekKey}_tardy`);
+    location.reload();
+  }
+}
+
+/* ----------------- AUTO WEEKLY RESET ----------------- */
+function checkWeeklyReset() {
+  const lastReset = localStorage.getItem("lastReset") || 0;
+  const now = Date.now();
+  if (now - lastReset > 7 * 24 * 60 * 60 * 1000) {
+    const weekKey = getWeekKey();
+    localStorage.removeItem(weekKey);
+    localStorage.setItem("lastReset", now);
+  }
 }
 checkWeeklyReset();
-function manualReset(){ if(confirm("Reset attendance for this week?")){ localStorage.clear(); localStorage.setItem("lastReset",Date.now()); location.reload(); } }
 
 /* CLOCK */
 function updateClock(){ timeNow.textContent="Current Time: "+new Date().toLocaleTimeString(); }
